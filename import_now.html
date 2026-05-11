@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Boeken herstellen</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+body{font-family:Georgia,serif;max-width:500px;margin:50px auto;padding:20px;background:#fdf6fb;color:#2a1a2e}
+h1{color:#c2476a;margin-bottom:8px}p{color:#7a5530;line-height:1.6;margin-bottom:20px}
+button{padding:16px 32px;background:#c2476a;color:#fff;border:none;border-radius:28px;font-size:1rem;cursor:pointer;font-family:Georgia,serif}
+button:disabled{opacity:.5}
+#log{margin-top:16px;background:#fff;border:2px solid #f0dfc0;border-radius:10px;padding:14px;font-family:monospace;font-size:.82rem;max-height:360px;overflow-y:auto;white-space:pre-wrap;display:none}
+.ok{color:#2e7d32}.err{color:#c62828}.info{color:#1565c0}
+</style>
+</head>
+<body>
+<h1>🌸 Boeken herstellen</h1>
+<p>Klik op de knop om alle 207 boeken opnieuw te laden. Duurt ongeveer 15 seconden.</p>
+<button id="btn" onclick="run()">▶ Start herstel</button>
+<div id="log"></div>
+<script>
+const {createClient}=supabase;
+const db=createClient(
+  "https://nroajhrquzkdwbqwwmojf.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yb2FqaHJxdXprZHdicXdtb2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTcyODksImV4cCI6MjA5NDA5MzI4OX0.u_nix0Z4yuJK3roMdaoqhx4eaklqKLmTl46kunkrLIw"
+);
+const BOOKS=[
+  {title:"Scherven brengen geluk",author:"Jill Mansell",shelf:"read",genre:"Roman"},
+  {title:"De boekwinkel vol liefde",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Een pikant dessert",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Scherven brengen geluk",author:"Robyn Carr",shelf:"read",genre:"Roman"},
+  {title:"De Canadese ontmoeting",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"Betoverend licht",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Verhalen van de nacht: Als de nacht valt / Schim in het donker",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Magie van de nacht: Nachtbraker / Spiegeling van de ziel",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Vonken in de nacht: Nachtschaduw / Spel vol vuur",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Alles voor elkaar",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De eerste en de laatste",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Voor nu en altijd",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Het Eiland van de Drie Zusters",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Het blauw van de baai",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De roep van de haven",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Het lied van de getijden",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De ziel van de zee",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Het huis op de klif",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Aan de wilde kust: Suzanne / Megan",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Geluk als besluit",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Proeven van liefde",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Armen vol rozen",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Dromen in beeld",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Als een blauwe vlam",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Wilde avonturen",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Fonkelende sterren: Jonkvrouw in nood / Wilde avonturen",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De rode lelie",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De zwarte roos",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De blauwe dahlia",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Veroverde vrijheid",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Voor altijd verliefd: Tijdloze hartstocht / Eeuwig avontuur",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Eeuwig en voor altijd",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Liefde in de sneeuw: Een eerste indruk / Nachtschaduw",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Goudzoekers",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Schijnsel van smaragd",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Eindeloze zomer: Midzomermaan / Hartstocht in beeld",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Een nieuw seizoen",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Verborgen goud",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Winterdromen: Winterhemel / Een droom voor drie",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Kijk niet terug",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Geluk als toegift",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Op de vlucht",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Die ene plek onder de zon",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Het strandhuis",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Winterlicht: Winterhemel / Thuis met kerst",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Schittering van de zon",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Zomerzin: Zomerse verleiding / De eerste plaats",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Stralende lente: Een gelukkige vergissing / Bruisende finale",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Een Ierse roos",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Onder de Griekse zon: Donkere cipressen / Zomerzon",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"Blauw vuur: Als een blauwe vlam / Vals licht",author:"Nora Roberts",shelf:"read",genre:"Roman"},
+  {title:"De verre horizon",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De vergeten Deverill",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De laatste roos van de zomer",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Als de rododendron bloeit",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De vrouwen van kasteel Deverill",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Onder de Italiaanse zon",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Een nieuw begin",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Bij het licht van de maan",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Wacht op mij",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De kus",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Een tijdloze liefde",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Villa Magdalena",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Valentina's laatste reis",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Onder de ombu-boom",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Naar de overkant",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"In de schaduw van het palazzo",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Het vlinderkistje",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Het geheim van Montague",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"Een liefde in Fairfield Park",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De zwaluw en de kolibrie",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De zigeunermadonna",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De vuurtoren van Connemara",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De vergeet mij niet-sonate",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De Franse tuinman",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De dochter van de imker",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De affaire",author:"Santa Montefiore",shelf:"read",genre:"Roman"},
+  {title:"De tropische zoektocht",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"De Griekse ontsnapping",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"Vuurlicht",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"Het wilde eiland",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"De Schotse ontdekking",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"De Ierse erfenis",author:"Karen Swan",shelf:"read",genre:"Roman"},
+  {title:"Sneeuw boven New York",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Zomer in de Hamptons",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Dromen in de ochtendzon",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Winter in New York",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Flirt op 5th Avenue",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Vlinders in Central Park",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Nachten in New York",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Vuurwerk in de sneeuw",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Een nieuwe zomer",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Winters Paradijs",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Goed bewaard geheim",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Een zomer in Parijs",author:"Sarah Morgan",shelf:"read",genre:"Roman"},
+  {title:"Het buitenhuis",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Wilde tuinen",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een nieuwe kans",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een nieuw leven",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"De kers op de taart",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Schoon schip",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een kus met Kerstmis",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Levenslessen",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"De Ierse minnaar",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een verleidelijk voorstel",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Liefdebrieven",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een liefde in de lente",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Een feestelijke dag",author:"Katie Fforde",shelf:"read",genre:"Roman"},
+  {title:"Hoop voor het landhuis",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"Storm rond het landhuis",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"Het landhuis",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"De erfenis van het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"Het verlangen van het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"De belofte van het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"De terugkeer van het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"De moed van het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"Het weesmeisje",author:"Anne Jacobs",shelf:"read",genre:"Roman"},
+  {title:"Zoete liefde",author:"Susan Mallery",shelf:"read",genre:"Roman"},
+  {title:"Heerlijk begin",author:"Susan Mallery",shelf:"read",genre:"Roman"},
+  {title:"Door dik en dun",author:"Susan Mallery",shelf:"read",genre:"Roman"},
+  {title:"De mooiste droom",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Land van honing",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"De appelboomgaard",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Maanlicht over het meer",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Zomer aan het meer",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Droom van een zomer",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Achter de wolken",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Schitterende ijsster",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Dicht bij het vuur",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Samen op het ijs",author:"Susan Wiggs",shelf:"read",genre:"Roman"},
+  {title:"Sophia's hoop",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Het vlindereiland",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Een wonderlijke winterreis",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Mathilda's geheim",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Agneta's erfenis",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Solveigs belofte",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Een kamer aan zee",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"De maneschijnsonate",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"De stormroos",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Winterbloesem",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"De rozentuin",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"De jasmijnzussen",author:"Corina Bomann",shelf:"read",genre:"Roman"},
+  {title:"Geluk op de savanne",author:"Leah Bach",shelf:"read",genre:"Roman"},
+  {title:"Liefde op de savanne",author:"Leah Bach",shelf:"read",genre:"Roman"},
+  {title:"Golvend gras",author:"Nora Roberts",shelf:"wants",genre:"Roman"},
+  {title:"Helder als kristal: Een vleugje magie / Mystiek verlangen",author:"Nora Roberts",shelf:"wants",genre:"Roman"},
+  {title:"Ontvouwen",author:"Nora Roberts",shelf:"wants",genre:"Roman"},
+  {title:"Ontwaken",author:"Nora Roberts",shelf:"wants",genre:"Roman"},
+  {title:"Aanzoek bij Tiffany's",author:"Sarah Morgan",shelf:"wants",genre:"Roman"},
+  {title:"Een tuin vol bloemen",author:"Katie Fforde",shelf:"wants",genre:"Roman"},
+  {title:"Praktisch perfect",author:"Katie Fforde",shelf:"wants",genre:"Roman"},
+  {title:"Met de Franse slag",author:"Katie Fforde",shelf:"wants",genre:"Roman"},
+  {title:"Iets ouds en iets blauw",author:"Katie Fforde",shelf:"wants",genre:"Roman"},
+  {title:"Een nieuwe koers",author:"Susan Mallery",shelf:"wants",genre:"Roman"},
+  {title:"Op blote voeten",author:"Susan Mallery",shelf:"wants",genre:"Roman"},
+  {title:"Rozen in de sneeuw",author:"Brenda Novak",shelf:"wants",genre:"Roman"},
+  {title:"Kiezen of delen",author:"Brenda Novak",shelf:"wants",genre:"Roman"},
+  {title:"Jonkvrouw in nood",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Kunst en vliegwerk",author:"Katie Fforde",shelf:"has",genre:"Roman"},
+  {title:"Hart van de zee",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Tranen van de Maan",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Een Ierse kerst",author:"Sherryl Woods",shelf:"has",genre:"Roman"},
+  {title:"Rozen in de sneeuw",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Zusjes tegen wil en dank",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Valse schijn",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"De Spaanse belofte",author:"Karen Swan",shelf:"has",genre:"Roman"},
+  {title:"De kleine theewinkel in Tokio",author:"Julie Caplin",shelf:"has",genre:"Roman"},
+  {title:"De kleine baai in Kroatië",author:"Julie Caplin",shelf:"has",genre:"Roman"},
+  {title:"Het kleine hotel onder het noorderlicht",author:"Julie Caplin",shelf:"has",genre:"Roman"},
+  {title:"De bloemendochters",author:"Tessa Collins",shelf:"has",genre:"Roman"},
+  {title:"De gelateria aan de kust",author:"Roberta Gregorio",shelf:"has",genre:"Roman"},
+  {title:"Kruidje-roer-me-niet",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"De scheepsdochter",author:"Hilke Sellnick",shelf:"has",genre:"Roman"},
+  {title:"De dorpswinkel",author:"Anne Jacobs",shelf:"has",genre:"Roman"},
+  {title:"Zonsopgang in Half Moon Bay",author:"Robyn Carr",shelf:"has",genre:"Roman"},
+  {title:"Verborgen goud",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Thuis is waar de zon schijnt",author:"Susan Wiggs",shelf:"has",genre:"Roman"},
+  {title:"Tussen water en wind",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Verleid door de zon",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Goud onder de golven",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Een roos in de nacht",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Gelukkig in de liefde",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Warmte in de winter",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Vergeet haar niet",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Gesloten hart",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Ontluiken",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Schitterende sterren",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Begraven geheimen",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Bij zonsondergang",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Onderstromen",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+  {title:"Zomerliefde",author:"Katie Fforde",shelf:"has",genre:"Roman"},
+  {title:"Uitzicht op zee",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Buiten zinnen",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Dubbel en dwars",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Duizend kleine dingen",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Goed voor elkaar",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Het ideale plaatje",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Samen onder de kerstboom",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Thuis in zijn armen",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Kerstmis in Whiskey Creek",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Nieuwe dromen",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Eindelijk zomer",author:"Brenda Novak",shelf:"has",genre:"Roman"},
+  {title:"Zon over het water",author:"Susan Wiggs",shelf:"has",genre:"Roman"},
+  {title:"Zon op het water",author:"Susan Wiggs",shelf:"has",genre:"Roman"},
+  {title:"Winter in de bergen",author:"Susan Wiggs",shelf:"has",genre:"Roman"},
+  {title:"Bijna volmaakt",author:"Susan Mallery",shelf:"has",genre:"Roman"},
+  {title:"Meer dan liefde",author:"Nora Roberts",shelf:"has",genre:"Roman"},
+];
+
+function log(msg,cls="ok"){
+  const el=document.getElementById("log");
+  el.style.display="block";
+  el.innerHTML+=`<span class="${cls}">${msg}\n</span>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+async function run(){
+  document.getElementById("btn").disabled=true;
+  document.getElementById("btn").textContent="Bezig…";
+  log("Bestaande boeken verwijderen…","info");
+  const {error:de}=await db.from("books").delete().neq("id",0);
+  if(de){log("Fout: "+de.message,"err");document.getElementById("btn").disabled=false;return;}
+  log("✓ Database leeggemaakt","ok");
+  log(BOOKS.length+" boeken laden…","info");
+  let done=0;
+  for(let i=0;i<BOOKS.length;i+=50){
+    const {error}=await db.from("books").insert(BOOKS.slice(i,i+50));
+    if(error){log("Fout: "+error.message,"err");document.getElementById("btn").disabled=false;return;}
+    done+=Math.min(50,BOOKS.length-i);
+    log("✓ "+done+" / "+BOOKS.length+" geladen");
+  }
+  log("\n🎉 Klaar! Alle boeken zijn hersteld.","ok");
+  document.getElementById("btn").textContent="✓ Klaar!";
+}
+</script>
+</body>
+</html>
