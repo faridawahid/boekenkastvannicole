@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zoek test</title>
+<style>
+body{font-family:Georgia,sans-serif;max-width:500px;margin:40px auto;padding:20px;background:#fdf6fb;color:#2a1a2e}
+h2{color:#c2476a}p{font-size:.85rem;color:#9a7aa0}
+input{width:100%;padding:12px 16px;border:1.5px solid #f0c0d8;border-radius:28px;font-size:1rem;box-sizing:border-box;outline:none;margin-bottom:8px}
+input:focus{border-color:#c2476a}
+.ac-box{background:#fff;border:1.5px solid #c2476a;border-radius:12px;margin-top:4px;overflow:hidden}
+.ac-it{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid #f9eef6;align-items:center}
+.ac-it:last-child{border-bottom:none}
+.ac-cov{width:34px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0}
+.ac-cov-ph{width:34px;height:48px;background:#f2e0ef;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.ac-tt{font-size:.88rem;font-weight:700}.ac-au{font-size:.76rem;color:#9a7aa0;margin-top:2px}.ac-yr{font-size:.7rem;color:#c4a8c8}
+.status{padding:10px 14px;border-radius:10px;margin-bottom:6px;font-size:.82rem}
+.info{background:#ede8f8;color:#7c6aaa}.error{background:#fde8e8;color:#a03030}.ok{background:#e4f2e8;color:#5a876a}
+</style>
+</head>
+<body>
+<h2>🔍 Zoektest met API key</h2>
+<p>Probeer: <strong>serena roberts</strong>, <strong>obsessie roberts</strong>, <strong>nora roberts</strong></p>
+<input id="q" placeholder="Typ een titel of auteur…" autocomplete="off"/>
+<div id="status"></div>
+<div id="results"></div>
+<script>
+const KEY = 'AIzaSyA7INARZIFukvE3SpMJz62kfD56gu2UqOM';
+const GB = (q,n=8) => `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=${n}&printType=books&key=${KEY}`;
+function gbCover(v){let u=v?.volumeInfo?.imageLinks?.thumbnail||v?.volumeInfo?.imageLinks?.smallThumbnail||null;if(u)u=u.replace("http://","https://").replace("zoom=1","zoom=3").replace("&edge=curl","");return u;}
+let timer=null;
+document.getElementById('q').addEventListener('input',function(){
+  clearTimeout(timer);const q=this.value.trim();
+  document.getElementById('results').innerHTML='';
+  if(q.length<2){document.getElementById('status').innerHTML='';return;}
+  document.getElementById('status').innerHTML='<div class="status info">Zoeken…</div>';
+  timer=setTimeout(()=>search(q),400);
+});
+async function search(q){
+  try{
+    const r=await fetch(GB(q,8));
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const items=d.items||[];
+    if(!items.length){document.getElementById('status').innerHTML='<div class="status error">Geen resultaten</div>';return;}
+    document.getElementById('status').innerHTML=`<div class="status ok">✓ ${items.length} boeken gevonden</div>`;
+    document.getElementById('results').innerHTML=`<div class="ac-box">${items.map(v=>{
+      const cover=gbCover(v);
+      return `<div class="ac-it">
+        ${cover?`<img class="ac-cov" src="${cover}" onerror="this.style.display='none'">` : '<div class="ac-cov-ph">📖</div>'}
+        <div><div class="ac-tt">${v.volumeInfo?.title||''}</div>
+        <div class="ac-au">${(v.volumeInfo?.authors||[])[0]||''}</div>
+        ${v.volumeInfo?.publishedDate?`<div class="ac-yr">${v.volumeInfo.publishedDate.slice(0,4)}</div>`:''}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }catch(e){document.getElementById('status').innerHTML=`<div class="status error">❌ ${e.message}</div>`;}
+}
+</script>
+</body>
+</html>
